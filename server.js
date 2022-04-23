@@ -10,11 +10,16 @@ app.use(cors());
 const database = { };
 
 app.get('/', (req, res)=> {
-	console.log('/home')
+	res.send('Home Son!')
 
 
 });
 
+app.post('/editor', (req, res)=> {
+	
+
+
+});
 
 
 //process.env chooses a port that is given, if it is given even.
