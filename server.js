@@ -21,14 +21,24 @@ app.get('/', (req, res)=> {
 app.post('/editor', (req, res)=> {
 	const { textArea, blogTitle } = req.body;
 	console.log(textArea, blogTitle);
-	res.send("we got the goods");
+	if (!textArea){
+		return res.status(400).send({
+   					message: 'This is an error!'
+				}); 
+	} else {
+		res.send("we got the goods");
+	}
+	
 
 });
 app.post('/upload', (req, res)=> {
+	if (!req.files) {
+		return res.send('There is no image saved');
+	}
 	const { formData } = req.files.file;
 	console.log(req.files.file);
 	if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).send('No files were uploaded.');
+        return res.status(400).send('No Image has been uploaded.');
     }
     // Accessing the file by the <input> File name="t_file"
     let targetFile = req.files.file;
