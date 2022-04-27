@@ -21,7 +21,7 @@ app.get('/', (req, res)=> {
 app.post('/editor', (req, res)=> {
 	const { textArea, blogTitle } = req.body;
 	console.log(textArea, blogTitle);
-	if (!textArea){
+	if (!textArea || !blogTitle){
 		return res.status(400).send({
    					message: 'This is an error!'
 				}); 
@@ -33,10 +33,10 @@ app.post('/editor', (req, res)=> {
 });
 app.post('/upload', (req, res)=> {
 	if (!req.files) {
-		return res.send('There is no image saved');
+		return res.status(400).send('There is no image saved');
 	}
 	const { formData } = req.files.file;
-	console.log(req.files.file);
+
 	if (!req.files || Object.keys(req.files).length === 0) {
         return res.status(400).send('No Image has been uploaded.');
     }
