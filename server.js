@@ -10,6 +10,8 @@ app.use(fileUpload({
 	useTempFiles: true,
 	tempFileDir : path.join(__dirname, 'tmp'),
 }));
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 
 app.get('/', (req, res)=> {
@@ -31,6 +33,18 @@ app.post('/editor', (req, res)=> {
 	
 
 });
+
+app.post('/register', (req, res)=> {
+	const { email , name, password } = req.body;
+	console.log(req.body);
+	 if (!email || !name || !password) {
+        return res.status(400).send('incorrect form submission');
+      }  else {
+      	var hash = bcrypt.hashSync(password, saltRounds);
+      }
+      console.log(hash);
+})
+
 app.post('/upload', (req, res)=> {
 	if (!req.files) {
 		return res.status(400).send('There is no image saved');
@@ -41,7 +55,9 @@ app.post('/upload', (req, res)=> {
         return res.status(400).send('No Image has been uploaded.');
     }
     // Accessing the file by the <input> File name="t_file"
+
     let targetFile = req.files.file;
+    console.log(targetFile);
     //mv(path, CB function(err))
     targetFile.mv(path.join(__dirname, 'uploads', targetFile.name), (err) => {
         if (err){
