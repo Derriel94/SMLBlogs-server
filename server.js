@@ -13,6 +13,19 @@ app.use(fileUpload({
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+const Users = [
+		
+		{id: 0,
+		name: 'Daniel',
+		emailaddress: 'derrielcollins96@gmail.com',
+		password: 'ten',
+		},
+		{id: 1,
+		name: 'Derriel',
+		emailaddress: 'cratercollins96@gmail.com',
+		password: '',
+		}
+]
 
 app.get('/', (req, res)=> {
 	res.send('Home Son!')
@@ -35,15 +48,25 @@ app.post('/editor', (req, res)=> {
 });
 
 app.post('/register', (req, res)=> {
-	const { email , name, password } = req.body;
+	let { email , name, password } = req.body;
 	console.log(req.body);
 	 if (!email || !name || !password) {
         return res.status(400).send('incorrect form submission');
-      }  else {
-      	var hash = bcrypt.hashSync(password, saltRounds);
-      }
+      } 
+      var hash = bcrypt.hashSync(password, saltRounds);
+      let tempData = { email, name, hash};
+      Users.push(tempData)
+      //this below was just a test, this needs to be in the signin also
+      //or just signin period
+     if(email === Users[0].emailaddress && password === Users[0].password) {
+		return res.send(email);
+     }
+      
+      
       console.log(hash);
 })
+
+console.log(Users)
 
 app.post('/upload', (req, res)=> {
 	if (!req.files) {
