@@ -3,6 +3,8 @@ const cors = require('cors')
 const fileUpload = require('express-fileupload');
 const app = express();
 const path = require('path');
+const { initializeApp } = require("firebase/app");
+const { getDatabase, ref, set } = require("firebase/database");
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors());
@@ -12,6 +14,29 @@ app.use(fileUpload({
 }));
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+// Import the functions you need from the SDKs you need
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyC3Q7h56VcgyKXlDf2J_EoB38SoZvpjxx4",
+  authDomain: "superiormindsblog.firebaseapp.com",
+  projectId: "superiormindsblog",
+  storageBucket: "superiormindsblog.appspot.com",
+  messagingSenderId: "49247296783",
+  appId: "1:49247296783:web:da7e4b8d146951ade9327a",
+  measurementId: "G-Y536FDE0JP"
+};
+
+// Initialize Firebase
+const firebaseapp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseapp);
+
+
+
 
 const Users = [
 		
@@ -55,7 +80,12 @@ app.post('/register', (req, res)=> {
       } 
       var hash = bcrypt.hashSync(password, saltRounds);
       let tempData = { email, name, hash};
-      Users.push(tempData)
+      // Users.push(tempData)
+      set(ref(db, 'users/'), {
+      	username: name,
+      	email: email,
+      	hash: hash,
+      });
       //this below was just a test, this needs to be in the signin also
       //or just signin period
      if(email === Users[0].emailaddress && password === Users[0].password) {
