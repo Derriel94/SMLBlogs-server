@@ -4,7 +4,7 @@ const fileUpload = require('express-fileupload');
 const app = express();
 const path = require('path');
 const { initializeApp } = require("firebase/app");
-const { getDatabase, ref, set } = require("firebase/database");
+const { getDatabase, ref, set, onValue } = require("firebase/database");
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors());
@@ -24,6 +24,7 @@ const saltRounds = 10;
 const firebaseConfig = {
   apiKey: "AIzaSyC3Q7h56VcgyKXlDf2J_EoB38SoZvpjxx4",
   authDomain: "superiormindsblog.firebaseapp.com",
+  databaseURL: "https://superiormindsblog-default-rtdb.firebaseio.com",
   projectId: "superiormindsblog",
   storageBucket: "superiormindsblog.appspot.com",
   messagingSenderId: "49247296783",
@@ -32,10 +33,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+
 const firebaseapp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseapp);
-
-
 
 
 const Users = [
@@ -67,12 +67,37 @@ app.post('/editor', (req, res)=> {
 				}); 
 	} else {
 		res.send("we got the goods");
+		set(ref(db, 'blogs/'), {
+      	blogTitle: blogTitle,
+      	textArea: textArea,
+      });
 	}
 	
 
 });
 
-app.post('/register', (req, res)=> {
+app.post('/signin', (req, res) => {
+	let { email, password } = req.body;
+	console.log(req.body);
+	if (!email || !password) {
+		return res.status(400).send('wrong credientials bro!');
+	} 
+		var logInfo = ref(db, 'users/');
+			onValue(logInfo, (snapshot) => {
+  			var data = snapshot.val();
+  			console.log(data.email);
+			const isValid = bcrypt.compareSync(req.body.password, data.hash);
+			console.log(isValid)
+  			// updateUsers(postElement, data);
+		
+		  if(email === data.email && isValid) {
+				console.log('true connection')
+				return res.send(email);
+     		}	
+		});
+})
+
+app.post('/register', (req, res) => {
 	let { email , name, password } = req.body;
 	console.log(req.body);
 	 if (!email || !name || !password) {
@@ -96,8 +121,8 @@ app.post('/register', (req, res)=> {
       console.log(hash);
 })
 
-console.log(Users)
 
+//This happens wheen we attempt to upload the image file
 app.post('/upload', (req, res)=> {
 	if (!req.files) {
 		return res.status(400).send('There is no image saved');
