@@ -80,21 +80,29 @@ app.post('/signin', (req, res) => {
 	let { email, password } = req.body;
 	console.log(req.body);
 	if (!email || !password) {
-		return res.status(400).send('wrong credientials bro!');
+		return res.status(400).json({
+			'message':'Password or Email was not entered'
+			});
 	} 
-		var logInfo = ref(db, 'users/');
+			var logInfo = ref(db, 'users/');
+
 			onValue(logInfo, (snapshot) => {
-  			var data = snapshot.val();
-  			console.log(data.email);
-			const isValid = bcrypt.compareSync(req.body.password, data.hash);
+  			const user = snapshot.val();
+  			console.log(user.email);
+			const isValid = bcrypt.compareSync(req.body.password, user.hash);
 			console.log(isValid)
   			// updateUsers(postElement, data);
-		
-		  if(email === data.email && isValid) {
-				console.log('true connection')
-				return res.send(email);
-     		}	
+			console.log(email === user.email && isValid)
+			if(email === user.email && isValid) {
+				console.log(user)
+				return res.json(user);
+     		} else {
+     			console.log()
+     			return res.status(400).send('wrong credits');
+     		}
+		  
 		});
+
 })
 
 app.post('/register', (req, res) => {
