@@ -2,24 +2,7 @@ const express = require('express');
 const cors = require('cors')
 const fileUpload = require('express-fileupload');
 const app = express();
-const path = require('path');
-const { Pool, Client } = require("pg");
-
-const client = new Client({
-  user: "postgres",
-  host: "localhost",
-  database: "blogdb",
-  password: "test",
-  port: 5432,
-});
-
-client.connect()
-
-client.query('SELECT * FROM users', (err, res) => {
-  console.log(err, res)
-  client.end()
-})
-
+const path = require('path'); 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors());
@@ -27,6 +10,7 @@ app.use(fileUpload({
 	useTempFiles: true,
 	tempFileDir : path.join(__dirname, 'tmp'),
 }));
+var mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
@@ -44,29 +28,56 @@ const Users = [
 		}
 ]
 
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "password",
+  database: "blogdb",
+  insecureAuth : true
+});
+
+
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+});
+
 app.get('/', (req, res)=> {
 	res.send('Home Son!')
 
 
-});
+})
 
-app.post('/editor', (req, res)=> {
-	const { textArea, blogTitle } = req.body;
-	console.log(textArea, blogTitle);
-	if (!textArea || !blogTitle){
-		return res.status(400).send({
-   					message: 'This is an error!'
-				}); 
-	} else {
-		res.send("we got the goods");
-		set(ref(db, 'blogs/'), {
-      	blogTitle: blogTitle,
-      	textArea: textArea,
-      });
-	}
-	
+app.post('/register', (req, res) => {
+	let { email , name, password } = req.body;
+	console.log(req.body);
+	 if (!email || !name || !password) {
+        return res.status(400).send('incorrect form submission');
+      } 
+      var hash = bcrypt.hashSync(password, saltRounds);
+      let tempData = { email, name, hash};
+      console.log(hash)
+   //    db.query('INSERT INTO users(name, email, hash)VALUES(' + name + ',' + email + ',' + hash +')', (err, res) => {
+  	// 			console.log(err, res)
+  	// 			db.end()
+  		const sqlinsert = "INSERT INTO user (username, email, password) VALUES (?,?,?)";
+			 con.query(sqlinsert,[name,email,hash]);
+    //   let id = '';
+  		// for(let i = 0; i < 4; i++){
+    //         id += name[Math.floor(Math.random() * name.length)];
+    //     }
 
-});
+      // Users.push(tempData)
+      // set(ref(db, 'users/'), {
+      // 	username: name,
+      // 	email: email,
+      // 	hash: hash,
+      // });
+  
+
+      
+      console.log(hash);
+})
 
 app.post('/signin', (req, res) => {
 	let { email, password } = req.body;
@@ -97,30 +108,24 @@ app.post('/signin', (req, res) => {
 
 })
 
-app.post('/register', (req, res) => {
-	let { email , name, password } = req.body;
-	console.log(req.body);
-	 if (!email || !name || !password) {
-        return res.status(400).send('incorrect form submission');
-      } 
-      var hash = bcrypt.hashSync(password, saltRounds);
-      let tempData = { email, name, hash};
-    //   let id = '';
-  		// for(let i = 0; i < 4; i++){
-    //         id += name[Math.floor(Math.random() * name.length)];
-    //     }
+app.post('/editor', (req, res)=> {
+	const { textArea, blogTitle } = req.body;
+	console.log(textArea, blogTitle);
+	if (!textArea || !blogTitle){
+		return res.status(400).send({
+   					message: 'This is an error!'
+				}); 
+	} else {
+		res.send("we got the goods");
+		set(ref(db, 'blogs/'), {
+      	blogTitle: blogTitle,
+      	textArea: textArea,
+      });
+	}
+	
 
-      // Users.push(tempData)
-      // set(ref(db, 'users/'), {
-      // 	username: name,
-      // 	email: email,
-      // 	hash: hash,
-      // });
-  
+});
 
-      
-      console.log(hash);
-})
 
 
 //This happens wheen we attempt to upload the image file
