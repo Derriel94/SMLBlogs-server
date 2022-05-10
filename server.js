@@ -63,13 +63,20 @@ app.post('/register', (req, res) => {
 	 if (!email || !name || !password) {
         return res.status(400).send('incorrect form submission');
       } 
-      var hash = bcrypt.hashSync(password, saltRounds);
+      const hash = bcrypt.hashSync(password, saltRounds);
       let tempData = { email, name, hash};
       console.log(hash)
   
   		const sqlinsert = "INSERT INTO users (name, email, hash) VALUES (?,?,?)";
 			 con.query(sqlinsert,[name,email,hash], (err, result)=> {
-			 		console.log('This is working')
+			 		
+			 		if (err) {
+			 			res.send({err: err});
+			 		}
+			 		if (result) {
+			 			console.log('This is working')
+			 			res.send(result);
+			 		}
 			 });
 
       
@@ -79,28 +86,31 @@ app.post('/register', (req, res) => {
 app.post('/signin', (req, res) => {
 	let { email, password } = req.body;
 	console.log(req.body);
-	if (!email || !password) {
+	if (email.length < 1 || password.length < 1) {
 		return res.status(400).json({
 			'message':'Password or Email was not entered'
 			});
-	} 
-		  const sqlSELECT = "SELECT user (username, email, password) VALUES (?,?,?)";
-			 con.query(sqlinsert,[name,email,hash], (err, result)=> {
-			 		console.log('This is working')
+		} else {
+
+		  const sqlSELECT = "SELECT * FROM users WHERE email = ?";
+			 con.query(sqlSELECT,[email], (err, result)=> {
+			 		const isValid = bcrypt.compareSync(req.body.password, result[0].hash);
+			 		if (err) {
+			 			res.send({err: err})
+			 		}
+
+			 		if (result.length > 0 && isValid) {
+			 			
+			 			console.log(result[0].name);
+			 			console.log('password hash match')
+			 			res.json(result[0]);
+			 		} else {
+			 			console.log('wrong password')
+			 			res.send({ message: "Wrong email/password Combination!"})
+			 		}
+			 		
 			 });
-			
-			const isValid = bcrypt.compareSync(req.body.password, user.hash);
-			console.log(isValid)
-  			// updateUsers(postElement, data);
-			console.log(email === user.email && isValid)
-			if(email === user.email && isValid) {
-				console.log(user)
-				return res.json(user);
-     		} else {
-     			console.log()
-     			return res.status(400).send('wrong credits');
-     		}
-		  
+			}
 
 })
 
