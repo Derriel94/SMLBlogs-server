@@ -31,7 +31,7 @@ const Users = [
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "password",
+  password: "(StoreWhat?94)",
   database: "blogdb",
   insecureAuth : true
 });
@@ -47,6 +47,15 @@ app.get('/', (req, res)=> {
 
 
 })
+app.get('/blogs', (req, res)=> {
+	 const sqlSELECT = "SELECT * FROM user";
+			 con.query(sqlSELECT, (err, result)=> {
+			 		console.log('This is working')
+			 });
+			
+
+
+})
 
 app.post('/register', (req, res) => {
 	let { email , name, password } = req.body;
@@ -57,23 +66,11 @@ app.post('/register', (req, res) => {
       var hash = bcrypt.hashSync(password, saltRounds);
       let tempData = { email, name, hash};
       console.log(hash)
-   //    db.query('INSERT INTO users(name, email, hash)VALUES(' + name + ',' + email + ',' + hash +')', (err, res) => {
-  	// 			console.log(err, res)
-  	// 			db.end()
-  		const sqlinsert = "INSERT INTO user (username, email, password) VALUES (?,?,?)";
-			 con.query(sqlinsert,[name,email,hash]);
-    //   let id = '';
-  		// for(let i = 0; i < 4; i++){
-    //         id += name[Math.floor(Math.random() * name.length)];
-    //     }
-
-      // Users.push(tempData)
-      // set(ref(db, 'users/'), {
-      // 	username: name,
-      // 	email: email,
-      // 	hash: hash,
-      // });
   
+  		const sqlinsert = "INSERT INTO users (name, email, hash) VALUES (?,?,?)";
+			 con.query(sqlinsert,[name,email,hash], (err, result)=> {
+			 		console.log('This is working')
+			 });
 
       
       console.log(hash);
@@ -87,11 +84,11 @@ app.post('/signin', (req, res) => {
 			'message':'Password or Email was not entered'
 			});
 	} 
-			var logInfo = ref(db, 'users/');
-
-			onValue(logInfo, (snapshot) => {
-  			const user = snapshot.val();
-  			console.log(user);
+		  const sqlSELECT = "SELECT user (username, email, password) VALUES (?,?,?)";
+			 con.query(sqlinsert,[name,email,hash], (err, result)=> {
+			 		console.log('This is working')
+			 });
+			
 			const isValid = bcrypt.compareSync(req.body.password, user.hash);
 			console.log(isValid)
   			// updateUsers(postElement, data);
@@ -104,7 +101,6 @@ app.post('/signin', (req, res) => {
      			return res.status(400).send('wrong credits');
      		}
 		  
-		});
 
 })
 
