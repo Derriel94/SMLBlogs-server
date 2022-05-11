@@ -14,19 +14,19 @@ var mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-const Users = [
+// const Users = [
 		
-		{id: 0,
-		name: 'Daniel',
-		emailaddress: 'derrielcollins96@gmail.com',
-		password: 'ten',
-		},
-		{id: 1,
-		name: 'Derriel',
-		emailaddress: 'cratercollins96@gmail.com',
-		password: '',
-		}
-]
+// 		{id: 0,
+// 		name: 'Daniel',
+// 		emailaddress: 'derrielcollins96@gmail.com',
+// 		password: 'ten',
+// 		},
+// 		{id: 1,
+// 		name: 'Derriel',
+// 		emailaddress: 'cratercollins96@gmail.com',
+// 		password: '',
+// 		}
+// ]
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -60,38 +60,33 @@ app.get('/blogs', (req, res)=> {
 app.post('/register', (req, res) => {
 	let { email , name, password } = req.body;
 	console.log(req.body);
-	 if (!email || !name || !password) {
-        return res.status(400).send('incorrect form submission');
-      } 
-      const hash = bcrypt.hashSync(password, saltRounds);
-      let tempData = { email, name, hash};
-      console.log(hash)
-  
-  		const sqlinsert = "INSERT INTO users (name, email, hash) VALUES (?,?,?)";
-			 con.query(sqlinsert,[name,email,hash], (err, result)=> {
-			 		
-			 		if (err) {
-			 			res.send({err: err});
-			 		}
-			 		if (result) {
-			 			console.log('This is working')
-			 			res.send(result);
-			 		}
-			 });
-
-      
-      console.log(hash);
+	if (!email || !name || !password) {
+      return res.status(400).send('incorrect form submission');
+  } 
+  const hash = bcrypt.hashSync(password, saltRounds);
+  let tempData = { email, name, hash};
+  console.log(hash)
+  const sqlinsert = "INSERT INTO users (name, email, hash) VALUES (?,?,?)";
+	con.query(sqlinsert,[name,email,hash], (err, result)=> {	 		
+	 	if (err) {
+	 		res.send({err: err});
+	 	}
+	  if (result) {
+	 		console.log('This is working')
+	 		res.send(result);
+	 	}
+	});
+  console.log(hash);
 })
 
 app.post('/signin', (req, res) => {
 	let { email, password } = req.body;
 	console.log(req.body);
-	if (email.length < 1 || password.length < 1) {
+	if (!email || !password) {
 		return res.status(400).json({
 			'message':'Password or Email was not entered'
 			});
-		} else {
-
+		} 
 		  const sqlSELECT = "SELECT * FROM users WHERE email = ?";
 			 con.query(sqlSELECT,[email], (err, result)=> {
 			 		const isValid = bcrypt.compareSync(req.body.password, result[0].hash);
@@ -110,7 +105,6 @@ app.post('/signin', (req, res) => {
 			 		}
 			 		
 			 });
-			}
 
 })
 
