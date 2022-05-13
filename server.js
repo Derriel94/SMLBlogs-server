@@ -3,16 +3,43 @@ const cors = require('cors')
 const fileUpload = require('express-fileupload');
 const app = express();
 const path = require('path'); 
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+var mysql = require('mysql');
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+
+
+
+//Do not need body parser because express takes care of that now
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+//setting up sessions insde of the cors function call
+//cors helps with protocol when sending data from machine to machine
+app.use(cors({ 
+	origin: ["http://localhost:3000"],
+	methods: ["GET", "POST"],
+	credentials: true,
+}));
 app.use(fileUpload({
 	useTempFiles: true,
 	tempFileDir : path.join(__dirname, 'tmp'),
 }));
-var mysql = require('mysql');
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
+
+//initialize session
+app.use(
+	session({
+		secret: "secret",
+		resave: false,
+		saveUninitialized: true,
+		cookie: {
+			secure: true,
+			expires: 60 * 60 * 24 * 1000,
+		},
+	})
+	);
+
 
 // const Users = [
 		
@@ -43,7 +70,7 @@ con.connect(function(err) {
 });
 
 app.get('/', (req, res)=> {
-	res.send('Home Son!')
+	console.log('please work')
 
 
 })
@@ -79,6 +106,15 @@ app.post('/register', (req, res) => {
   console.log(hash);
 })
 
+
+app.post('/signinsess', (req, res) => {
+	if (req.session.user) {
+		res.send({loggedIn: true, user: req.session.user});
+	} else {
+		res.send({loggedIn: false});
+	}
+})
+
 app.post('/signin', (req, res) => {
 	let { email, password } = req.body;
 	console.log(req.body);
@@ -95,10 +131,16 @@ app.post('/signin', (req, res) => {
 			 		}
 
 			 		if (result.length > 0 && isValid) {
-			 			
+			 			 req.session.user = result;
+			 			 req.session.save((err)=> {
+			 			 	if (err) {
+			 			 		return err;
+			 			 	}
+			 			 });
+			 			console.log(req.session.user);
 			 			console.log(result[0].name);
 			 			console.log('password hash match')
-			 			res.json(result[0]);
+			 			res.json(result);
 			 		} else {
 			 			console.log('wrong password')
 			 			res.send({ message: "Wrong email/password Combination!"})
@@ -107,6 +149,7 @@ app.post('/signin', (req, res) => {
 			 });
 
 })
+
 
 app.post('/editor', (req, res)=> {
 	const { textArea, blogTitle } = req.body;
