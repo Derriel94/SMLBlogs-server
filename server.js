@@ -12,7 +12,7 @@ const session = require("express-session");
 
 
 //Do not need body parser because express takes care of that now
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cookieParser());
 //setting up sessions insde of the cors function call
@@ -27,16 +27,34 @@ app.use(fileUpload({
 	tempFileDir : path.join(__dirname, 'tmp'),
 }));
 
+//We will use this object and if statement to initialize 
+// sessions for production.
+// var sess = {
+//   secret: 'keyboard cat',
+//   cookie: {}
+// }
+
+// if (app.get('env') === 'production') {
+//   app.set('trust proxy', 1) // trust first proxy
+//   sess.cookie.secure = true // serve secure cookies
+// }
+
+// app.use(session(sess))
+
+
 //initialize session
+
 app.use(
 	session({
+		key: "userId",
 		secret: "secret",
-		resave: false,
+		resave: true,
 		saveUninitialized: true,
 		cookie: {
-			secure: true,
-			expires: 60 * 60 * 24 * 1000,
-		},
+			httpOnly: false,
+			maxAge: 60 * 60 * 24 * 1000,
+			secure: false,
+		}
 	})
 	);
 
@@ -69,11 +87,7 @@ con.connect(function(err) {
   console.log("Connected!");
 });
 
-app.get('/', (req, res)=> {
-	console.log('please work')
 
-
-})
 app.get('/blogs', (req, res)=> {
 	 const sqlSELECT = "SELECT * FROM user";
 			 con.query(sqlSELECT, (err, result)=> {
@@ -107,8 +121,9 @@ app.post('/register', (req, res) => {
 })
 
 
-app.post('/signinsess', (req, res) => {
-	if (req.session.user) {
+app.get('/', (req, res) => {
+	console.log(req.session) 
+	if (req.session.userId) {
 		res.send({loggedIn: true, user: req.session.user});
 	} else {
 		res.send({loggedIn: false});
@@ -131,16 +146,20 @@ app.post('/signin', (req, res) => {
 			 		}
 
 			 		if (result.length > 0 && isValid) {
-			 			 req.session.user = result;
-			 			 req.session.save((err)=> {
-			 			 	if (err) {
-			 			 		return err;
-			 			 	}
-			 			 });
+			 				console.log('password hash match')
+			 			req.session.regenerate((err)=> {
+			 				if (err) next(err)
+			 			
+			 			 req.session.userId = result[0];
 			 			console.log(req.session.user);
-			 			console.log(result[0].name);
-			 			console.log('password hash match')
-			 			res.json(result);
+			 			// console.log(result[0].name);
+			 			   	req.session.save(function (err) {
+      					if (err) return next(err)
+      						res.send(result);
+      						
+    						})
+
+			 			})
 			 		} else {
 			 			console.log('wrong password')
 			 			res.send({ message: "Wrong email/password Combination!"})
