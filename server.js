@@ -6,15 +6,14 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 var mysql = require('mysql');
-const cookieParser = require("cookie-parser");
 const session = require("express-session");
 
 
 
 //Do not need body parser because express takes care of that now
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({extended: false}));
 app.use(express.json());
-app.use(cookieParser());
+
 //setting up sessions insde of the cors function call
 //cors helps with protocol when sending data from machine to machine
 app.use(cors({ 
@@ -43,17 +42,16 @@ app.use(fileUpload({
 
 
 //initialize session
-
+app.set("trust proxy", 1);
 app.use(
 	session({
-		key: "userId",
 		secret: "secret",
 		resave: true,
 		saveUninitialized: true,
 		cookie: {
 			httpOnly: false,
-			maxAge: 60 * 60 * 24 * 1000,
-			secure: false,
+			sameSite: "none",
+			maxAge: 60 * 60 * 24 * 1000
 		}
 	})
 	);
@@ -121,9 +119,9 @@ app.post('/register', (req, res) => {
 })
 
 
-app.get('/', (req, res) => {
-	console.log(req.session) 
-	if (req.session.userId) {
+app.get('/sess', (req, res) => {
+	console.log(req.session.user) 
+	if (req.session.user) {
 		res.send({loggedIn: true, user: req.session.user});
 	} else {
 		res.send({loggedIn: false});
@@ -150,7 +148,7 @@ app.post('/signin', (req, res) => {
 			 			req.session.regenerate((err)=> {
 			 				if (err) next(err)
 			 			
-			 			 req.session.userId = result[0];
+			 			 req.session.user = result[0];
 			 			console.log(req.session.user);
 			 			// console.log(result[0].name);
 			 			   	req.session.save(function (err) {
