@@ -86,15 +86,15 @@ con.connect(function(err) {
 });
 
 
-app.get('/blogs', (req, res)=> {
-	 const sqlSELECT = "SELECT * FROM user";
-			 con.query(sqlSELECT, (err, result)=> {
-			 		console.log('This is working')
-			 });
+// app.get('/blogs', (req, res)=> {
+// 	 const sqlSELECT = "SELECT * FROM user";
+// 			 con.query(sqlSELECT, (err, result)=> {
+// 			 		console.log('This is working')
+// 			 });
 			
 
 
-})
+// })
 
 app.post('/register', (req, res) => {
 	let { email , name, password } = req.body;
@@ -127,6 +127,17 @@ app.get('/sess', (req, res) => {
 		res.send({loggedIn: false});
 	}
 })
+
+app.get('/blogs', (req, res) =>{
+	const sqlSELECT = "SELECT * FROM blog_table";
+	con.query(sqlSELECT, (err, result)=>{
+		 if (err) {
+		 	res.send({error: err})
+		 }
+			res.send(result);
+		console.log(result)
+	})
+});
 
 app.post('/signin', (req, res) => {
 	let { email, password } = req.body;
@@ -176,11 +187,16 @@ app.post('/editor', (req, res)=> {
    					message: 'This is an error!'
 				}); 
 	} else {
-		res.send("we got the goods");
-		set(ref(db, 'blogs/'), {
-      	blogTitle: blogTitle,
-      	textArea: textArea,
-      });
+		const sqlinsert = "INSERT INTO blog_table (textArea, blogTitle) VALUES (?,?)";
+	con.query(sqlinsert,[ textArea, blogTitle ], (err, result)=> {	 		
+	 	if (err) {
+	 		res.send({err: err});
+	 	}
+	  if (result) {
+	 		console.log('This is working')
+	 		res.send(result);
+	 	}
+	});
 	}
 	
 
