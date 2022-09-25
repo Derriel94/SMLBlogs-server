@@ -6,12 +6,13 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 var mysql = require('mysql');
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
 
 
 
 //Do not need body parser because express takes care of that now
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 //setting up sessions insde of the cors function call
@@ -26,50 +27,21 @@ app.use(fileUpload({
 	tempFileDir : path.join(__dirname, 'tmp'),
 }));
 
-//We will use this object and if statement to initialize 
-// sessions for production.
-// var sess = {
-//   secret: 'keyboard cat',
-//   cookie: {}
-// }
-
-// if (app.get('env') === 'production') {
-//   app.set('trust proxy', 1) // trust first proxy
-//   sess.cookie.secure = true // serve secure cookies
-// }
-
-// app.use(session(sess))
-
 
 //initialize session
-app.set("trust proxy", 1);
+app.use(cookieParser());
 app.use(
 	session({
-		secret: "secret",
-		resave: true,
-		saveUninitialized: true,
+		key: "userName",
+		secret: "secretsecret",
+		resave: false,
+		saveUninitialized: false,
 		cookie: {
-			httpOnly: false,
-			sameSite: "none",
-			maxAge: 60 * 60 * 24 * 1000
+			expires: 60 * 60 * 24 * 1000
 		}
 	})
 	);
 
-
-// const Users = [
-		
-// 		{id: 0,
-// 		name: 'Daniel',
-// 		emailaddress: 'derrielcollins96@gmail.com',
-// 		password: 'ten',
-// 		},
-// 		{id: 1,
-// 		name: 'Derriel',
-// 		emailaddress: 'cratercollins96@gmail.com',
-// 		password: '',
-// 		}
-// ]
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -86,15 +58,6 @@ con.connect(function(err) {
 });
 
 
-// app.get('/blogs', (req, res)=> {
-// 	 const sqlSELECT = "SELECT * FROM user";
-// 			 con.query(sqlSELECT, (err, result)=> {
-// 			 		console.log('This is working')
-// 			 });
-			
-
-
-// })
 
 app.post('/register', (req, res) => {
 	let { email , name, password } = req.body;
@@ -119,14 +82,6 @@ app.post('/register', (req, res) => {
 })
 
 
-app.get('/sess', (req, res) => {
-	console.log(req.session.user) 
-	if (req.session.user) {
-		res.send({loggedIn: true, user: req.session.user});
-	} else {
-		res.send({loggedIn: false});
-	}
-})
 
 app.get('/blogs', (req, res) =>{
 	const sqlSELECT = "SELECT * FROM blog_table";
@@ -135,7 +90,7 @@ app.get('/blogs', (req, res) =>{
 		 	res.send({error: err})
 		 }
 			res.send(result);
-		console.log(result)
+		// console.log(result)
 	})
 });
 
@@ -154,21 +109,12 @@ app.post('/signin', (req, res) => {
 			 			res.send({err: err})
 			 		}
 
-			 		if (result.length > 0 && isValid) {
-			 				console.log('password hash match')
-			 			req.session.regenerate((err)=> {
-			 				if (err) next(err)
-			 			
-			 			 req.session.user = result[0];
-			 			console.log(req.session.user);
-			 			// console.log(result[0].name);
-			 			   	req.session.save(function (err) {
-      					if (err) return next(err)
-      						res.send(result);
+			 		if (result.length > 0 && isValid) {		 			
+			 			console.log(result[0].email) 
+			 			req.session.user = result;
+			 			console.log(req.session.user)
+      			res.send(result);
       						
-    						})
-
-			 			})
 			 		} else {
 			 			console.log('wrong password')
 			 			res.send({ message: "Wrong email/password Combination!"})
@@ -179,16 +125,27 @@ app.post('/signin', (req, res) => {
 })
 
 
+app.get('/signin', (req, res) => {
+	console.log(req.session.user) 
+	if (req.session.user) {
+		res.send({loggedIn: true, user: req.session.user});
+	} else {
+		res.send({loggedIn: false});
+	}
+})
+
+
+
 app.post('/editor', (req, res)=> {
 	const { textArea, blogTitle } = req.body;
-	console.log(textArea, blogTitle);
+
 	if (!textArea || !blogTitle){
 		return res.status(400).send({
    					message: 'This is an error!'
 				}); 
 	} else {
 		const sqlinsert = "INSERT INTO blog_table (textArea, blogTitle) VALUES (?,?)";
-	con.query(sqlinsert,[ textArea, blogTitle ], (err, result)=> {	 		
+	con.query(sqlinsert,[ textArea, blogTitle], (err, result)=> {	 		
 	 	if (err) {
 	 		res.send({err: err});
 	 	}
@@ -199,32 +156,6 @@ app.post('/editor', (req, res)=> {
 	});
 	}
 	
-
-});
-
-
-
-//This happens wheen we attempt to upload the image file
-app.post('/upload', (req, res)=> {
-	if (!req.files) {
-		return res.status(400).send('There is no image saved');
-	}
-	const { formData } = req.files.file;
-
-	if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).send('No Image has been uploaded.');
-    }
-    // Accessing the file by the <input> File name="t_file"
-
-    let targetFile = req.files.file;
-    console.log(targetFile);
-    //mv(path, CB function(err))
-    targetFile.mv(path.join(__dirname, 'uploads', targetFile.name), (err) => {
-        if (err){
-            return res.status(500).send(err);
-        }
-        res.send('File uploaded!');
-    });
 
 });
 
