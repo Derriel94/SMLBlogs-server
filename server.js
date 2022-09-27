@@ -44,7 +44,6 @@ app.use(
 
 
 var con = mysql.createConnection({
-  host: "localhost",
   user: "root",
   password: "(StoreWhat?94)",
   database: "blogdb",
