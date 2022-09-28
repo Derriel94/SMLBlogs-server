@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors')
+const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const app = express();
 const path = require('path'); 
@@ -18,7 +18,7 @@ app.use(express.json());
 //setting up sessions insde of the cors function call
 //cors helps with protocol when sending data from machine to machine
 app.use(cors({ 
-	origin: ["https://superiormindsblog.herokuapp.com"],
+	origin: "https://superiormindsblog.herokuapp.com",
 	methods: ["GET", "POST"],
 	credentials: true,
 }));
