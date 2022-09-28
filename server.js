@@ -29,18 +29,18 @@ app.use(fileUpload({
 
 
 //initialize session
-app.use(cookieParser());
-app.use(
-	session({
-		key: "userName",
-		secret: "secretsecret",
-		resave: false,
-		saveUninitialized: false,
-		cookie: {
-			expires: 60 * 60 * 24 * 1000
-		}
-	})
-	);
+// app.use(cookieParser());
+// app.use(
+// 	session({
+// 		key: "userName",
+// 		secret: "secretsecret",
+// 		resave: false,
+// 		saveUninitialized: false,
+// 		cookie: {
+// 			expires: 60 * 60 * 24 * 1000
+// 		}
+// 	})
+// 	);
 
 
 var con = mysql.createConnection({
@@ -53,7 +53,7 @@ var con = mysql.createConnection({
 
 
 con.connect(function(err) {
-  // if (err) throw err;
+   if (err) throw err;
   console.log("Connected!");
 });
 
