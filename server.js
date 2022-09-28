@@ -18,7 +18,7 @@ app.use(express.json());
 //setting up sessions insde of the cors function call
 //cors helps with protocol when sending data from machine to machine
 app.use(cors({ 
-	origin: ["http://localhost:3000"],
+	origin: ["https://superiormindsblog.herokuapp.com"],
 	methods: ["GET", "POST"],
 	credentials: true,
 }));
