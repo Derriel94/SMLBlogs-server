@@ -17,11 +17,11 @@ app.use(express.json());
 
 //setting up sessions insde of the cors function call
 //cors helps with protocol when sending data from machine to machine
-app.use(cors({ 
-	origin: ["https://superiormindsblog.herokuapp.com"],
-	methods: ["GET", "POST"],
-	credentials: true,
-}));
+// app.use(cors({ 
+// 	origin: ["https://superiormindsblog.herokuapp.com"],
+// 	methods: ["GET", "POST"],
+// 	credentials: true,
+// }));
 app.use(fileUpload({
 	useTempFiles: true,
 	tempFileDir : path.join(__dirname, 'tmp'),
