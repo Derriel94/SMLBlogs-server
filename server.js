@@ -44,13 +44,14 @@ app.use(fileUpload({
 
 
 var con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "(StoreWhat?94)",
-  database: "blogdb",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB,
   insecureAuth : true
 });
 
+//87170e0d
 
 con.connect(function(err) {
    if (err) throw err;
@@ -68,7 +69,7 @@ app.post('/register', (req, res) => {
   const hash = bcrypt.hashSync(password, saltRounds);
   let tempData = { email, name, hash};
   console.log(hash)
-  const sqlinsert = "INSERT INTO users (name, email, hash) VALUES (?,?,?)";
+  const sqlinsert = "INSERT INTO user_table (name, email, hash) VALUES (?,?,?)";
 	con.query(sqlinsert,[name,email,hash], (err, result)=> {	 		
 	 	if (err) {
 	 		res.send({err: err});
