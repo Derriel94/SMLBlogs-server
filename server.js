@@ -51,10 +51,10 @@ var con = mysql.createPool({
 
 //87170e0d
 
-con.connect(function(err) {
-   if (err) throw err;
-  console.log("Connected!");
-});
+// con.connect(function(err) {
+//    if (err) throw err;
+//   console.log("Connected!");
+// });
 
 app.get('/', (req, res) => {
 	console.log("here we are");
