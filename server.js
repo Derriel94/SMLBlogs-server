@@ -56,9 +56,9 @@ con.connect(function(err) {
   console.log("Connected!");
 });
 
-app.get('/', (req, res) => {
-	console.log("here we are");
-});
+// app.get('/', (req, res) => {
+// 	console.log("here we are");
+// });
 
 app.post('/register', (req, res) => {
 	let { email , name, password } = req.body;
