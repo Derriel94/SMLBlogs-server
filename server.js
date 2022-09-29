@@ -47,7 +47,7 @@ var db_config = {
   port: 3306,
 };
 
-var connection;
+var connection = mysql.createConnection(db_config);;
 
 function handleDisconnect() {
   connection = mysql.createConnection(db_config); // Recreate the connection, since
