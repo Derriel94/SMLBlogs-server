@@ -39,19 +39,42 @@ app.use(fileUpload({
 // 		}
 // 	})
 // 	);
-
-
-var con = mysql.createConnection({
-  host: process.env.DB_HOST,
+var db_config = {
+	host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB,
   port: 3306,
-});
+};
+
+var connection;
+
+function handleDisconnect() {
+  connection = mysql.createConnection(db_config); // Recreate the connection, since
+                                                  // the old one cannot be reused.
+
+  connection.connect(function(err) {              // The server is either down
+    if(err) {                                     // or restarting (takes a while sometimes).
+      console.log('error when connecting to db:', err);
+      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+    }                                     // to avoid a hot loop, and to allow our node script to
+  });                                     // process asynchronous requests in the meantime.
+                                          // If you're also serving http, display a 503 error.
+  connection.on('error', function(err) {
+    console.log('db error', err);
+    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+      handleDisconnect();                         // lost due to either server restart, or a
+    } else {                                      // connnection idle timeout (the wait_timeout
+      throw err;                                  // server variable configures this)
+    }
+  });
+}
+
+handleDisconnect();
 
 //87170e0d
 
-con.connect(function(err) {
+connection.connect(function(err) {
    if (err) throw err;
   console.log("Connected!");
 });
@@ -68,7 +91,7 @@ app.post('/register', (req, res) => {
   let tempData = { email, name, hash};
   console.log(hash)
   const sqlinsert = "INSERT INTO user_table (name, email, hash) VALUES (?,?,?)";
-	con.query(sqlinsert,[name,email,hash], (err, result)=> {	 		
+	connection.query(sqlinsert,[name,email,hash], (err, result)=> {	 		
 	 	if (err) {
 	 		res.send({err: err});
 	 	}
@@ -84,7 +107,7 @@ app.post('/register', (req, res) => {
 
 app.get('/blogs', (req, res) =>{
 	const sqlSELECT = "SELECT * FROM blog_table";
-	con.query(sqlSELECT, (err, result)=>{
+	connection.query(sqlSELECT, (err, result)=>{
 		 if (err) {
 		 	res.send({error: err})
 		 }
@@ -102,7 +125,7 @@ app.post('/signin', (req, res) => {
 			});
 		} 
 		  const sqlSELECT = "SELECT * FROM users WHERE email = ?";
-			 con.query(sqlSELECT,[email], (err, result)=> {
+			 connection.query(sqlSELECT,[email], (err, result)=> {
 			 		const isValid = bcrypt.compareSync(req.body.password, result[0].hash);
 			 		if (err) {
 			 			res.send({err: err})
@@ -144,7 +167,7 @@ app.post('/editor', (req, res)=> {
 				}); 
 	} else {
 		const sqlinsert = "INSERT INTO blog_table (textArea, blogTitle) VALUES (?,?)";
-	con.query(sqlinsert,[ textArea, blogTitle], (err, result)=> {	 		
+	connection.query(sqlinsert,[ textArea, blogTitle], (err, result)=> {	 		
 	 	if (err) {
 	 		res.send({err: err});
 	 	}
