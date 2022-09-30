@@ -20,6 +20,7 @@ app.use(express.json());
 app.use(cors({ 
 	origin: "*",
 }));
+
 app.use(fileUpload({
 	useTempFiles: true,
 	tempFileDir : path.join(__dirname, 'tmp'),
@@ -34,9 +35,6 @@ app.use(fileUpload({
 // 		secret: "secretsecret",
 // 		resave: false,
 // 		saveUninitialized: false,
-// 		cookie: {
-// 			expires: 60 * 60 * 24 * 1000
-// 		}
 // 	})
 // 	);
 
@@ -133,7 +131,7 @@ app.get('/signin', (req, res) => {
 	} else {
 		res.send({loggedIn: false});
 	}
-})
+});
 
 
 
