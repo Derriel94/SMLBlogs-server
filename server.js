@@ -89,7 +89,7 @@ app.get('/blogs', (req, res) =>{
 		 	res.send({error: err})
 		 }
 			res.send(result);
-		// console.log(result)
+		
 	})
 });
 
