@@ -86,9 +86,9 @@ app.get('/blogs', (req, res) =>{
 	const sqlSELECT = "SELECT * FROM blog_table";
 	con.query(sqlSELECT, (err, result)=>{
 		 if (err) {
-		 	res.send({error: err})
+		 	return res.send({error: err})
 		 }
-			res.send(result);
+			return res.send(result);
 		
 	})
 });
