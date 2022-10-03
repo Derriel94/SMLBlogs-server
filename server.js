@@ -68,7 +68,7 @@ app.post('/register', (req, res) => {
   const hash = bcrypt.hashSync(password, saltRounds);
   let tempData = { email, name, hash};
   
-  const sqlinsert = "INSERT INTO users (name, email, hash) VALUES (?,?,?)";
+  const sqlinsert = "INSERT INTO user_table (name, email, hash) VALUES (?,?,?)";
 	con.query(sqlinsert,[name,email,hash], (err, result)=> {	 		
 	 	if (err) {
 	 		res.send({err: err});
@@ -103,7 +103,7 @@ app.post('/signin', (req, res) => {
 		return res.send({err: "You need to enter in both credintials!"})
 		} 
 		console.log("break1")
-		  const sqlSELECT = "SELECT * FROM users WHERE email = ?";
+		  const sqlSELECT = "SELECT * FROM user_table WHERE email = ?";
 			 con.query(sqlSELECT,[email], (err, result)=> {
 			 	if (err) {
 			 			return res.send({err: "databse issue"})
