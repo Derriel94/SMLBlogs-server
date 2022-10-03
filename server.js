@@ -86,12 +86,12 @@ app.post('/register', (req, res) => {
 app.get('/blogs', (req, res) =>{
 	const sqlSELECT = "SELECT * FROM blog_table";
 	con.query(sqlSELECT, (err, result)=>{
-
 		 if (err) {
 		 	console.log(err)
 		 	return res.send({error: err})
-		 }
-			return res.send(result);
+		 } else {
+		 	return res.send(result);
+		 }			
 		
 	})
 });
