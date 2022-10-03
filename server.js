@@ -6,8 +6,6 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 var mysql = require('mysql');
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
 
 
 
@@ -19,6 +17,9 @@ app.use(express.json());
 //cors helps with protocol when sending data from machine to machine
 app.use(cors({ 
 	origin: "*",
+	methods: ['GET','POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 600
 }));
 
 app.use(fileUpload({
@@ -66,26 +67,28 @@ app.post('/register', (req, res) => {
   } 
   const hash = bcrypt.hashSync(password, saltRounds);
   let tempData = { email, name, hash};
-  console.log(hash)
-  const sqlinsert = "INSERT INTO user_table (name, email, hash) VALUES (?,?,?)";
+  
+  const sqlinsert = "INSERT INTO users (name, email, hash) VALUES (?,?,?)";
 	con.query(sqlinsert,[name,email,hash], (err, result)=> {	 		
 	 	if (err) {
 	 		res.send({err: err});
 	 	}
 	  if (result) {
 	 		console.log('This is working')
+	 		console.log(result);
 	 		res.send(result);
 	 	}
 	});
-  console.log(hash);
+  
 })
-
 
 
 app.get('/blogs', (req, res) =>{
 	const sqlSELECT = "SELECT * FROM blog_table";
 	con.query(sqlSELECT, (err, result)=>{
+
 		 if (err) {
+		 	console.log(err)
 		 	return res.send({error: err})
 		 }
 			return res.send(result);
@@ -97,26 +100,22 @@ app.post('/signin', (req, res) => {
 	let { email, password } = req.body;
 	console.log(req.body);
 	if (!email || !password) {
-		return res.status(400).json({
-			'message':'Password or Email was not entered'
-			});
+		return res.send({err: "You need to enter in both credintials!"})
 		} 
+		console.log("break1")
 		  const sqlSELECT = "SELECT * FROM users WHERE email = ?";
 			 con.query(sqlSELECT,[email], (err, result)=> {
-			 		const isValid = bcrypt.compareSync(req.body.password, result[0].hash);
-			 		if (err) {
-			 			res.send({err: err})
-			 		}
-
-			 		if (result.length > 0 && isValid) {		 			
-			 			console.log(result[0].email) 
-			 			req.session.user = result;
-			 			console.log(req.session.user)
-      			res.send(result);
-      						
-			 		} else {
-			 			console.log('wrong password')
-			 			res.send({ message: "Wrong email/password Combination!"})
+			 	if (err) {
+			 			return res.send({err: "databse issue"})
+			 		} else if (result.length !== 0) {
+			 			 	const isValid = bcrypt.compareSync(req.body.password, result[0].hash);
+			 			 	if (isValid) {
+			 			 		return res.send(result);
+			 			 	} else {
+			 			 		return res.send({ err: "Wrong email/password Combination!"})
+			 			 	}
+			 		} else {	
+			 			return res.send({ err: "Wrong email/password Combination!"})
 			 		}
 			 		
 			 });
@@ -124,14 +123,14 @@ app.post('/signin', (req, res) => {
 })
 
 
-app.get('/signin', (req, res) => {
-	console.log(req.session.user) 
-	if (req.session.user) {
-		res.send({loggedIn: true, user: req.session.user});
-	} else {
-		res.send({loggedIn: false});
-	}
-});
+// app.get('/signin', (req, res) => {
+// 	console.log(req.session.user) 
+// 	if (req.session.user) {
+// 		res.send({loggedIn: true, user: req.session.user});
+// 	} else {
+// 		res.send({loggedIn: false});
+// 	}
+// });
 
 
 
