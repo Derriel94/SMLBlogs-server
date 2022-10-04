@@ -40,6 +40,7 @@ app.use(fileUpload({
 // 	);
 
 
+
 var con = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -87,8 +88,7 @@ app.get('/blogs', (req, res) =>{
 	const sqlSELECT = "SELECT * FROM blog_table";
 	con.query(sqlSELECT, (err, result)=>{
 		 if (err) {
-		 	console.log(err)
-		 	return res.send({error: err})
+		 	return res.send({error: "there is an error in blogs retrievel"})
 		 } else {
 		 	return res.send(result);
 		 }			
