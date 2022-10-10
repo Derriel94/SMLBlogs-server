@@ -123,14 +123,19 @@ app.post('/signin', (req, res) => {
 })
 
 
-// app.get('/signin', (req, res) => {
-// 	console.log(req.session.user) 
-// 	if (req.session.user) {
-// 		res.send({loggedIn: true, user: req.session.user});
-// 	} else {
-// 		res.send({loggedIn: false});
-// 	}
-// });
+app.delete('/delete/:textId', (req, res) => {
+const id = req.params.textId;
+const sqlDelete = "DELETE FROM blog_table WHERE textId = ?"
+
+con.query(sqlDelete,[id], (err, result)=>{
+	if (err) {
+		console.log(err)
+	} else {
+		console.log('delete complete')
+	}
+});
+	
+});
 
 
 
