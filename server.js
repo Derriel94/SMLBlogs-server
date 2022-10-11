@@ -17,7 +17,7 @@ app.use(express.json());
 //cors helps with protocol when sending data from machine to machine
 app.use(cors({ 
 	origin: "*",
-	methods: ['GET','POST'],
+	methods: ['GET','POST','DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   maxAge: 600
 }));
